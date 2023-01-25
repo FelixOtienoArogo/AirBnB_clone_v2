@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 """
-Fabric scrip tha generates a .tgz archive from the contents of the web_static folder of the AirBnB clnoe repo.
+Fabric scrip tha generates a .tgz archive from.
 
+the contents of the web_static folder of the AirBnB clnoe repo.
 using the function do_pack.
 """
 from datetime import datetime
