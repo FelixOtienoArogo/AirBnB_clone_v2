@@ -1,12 +1,19 @@
 #!/usr/bin/python3
+"""
+Fabric script (based on the file 1-pack_web_static.py) that.
+
+distributes an archive to your web servers, using the function do_deploy.
+"""
 from fabric.api import *
 import os
 from datetime import datetime
 
-env.hosts = ['34.224.4.61:80', '18.206.192.35:80']
+env.hosts = ['34.224.4.61', '18.206.192.35']
+env.user = 'ubuntu'
 
 
 def do_deploy(archive_path):
+    """Do the actual deployment."""
     a_list = archive_path.split(".tgz")
     archive_wo_ext = "".join(a_list)
     b_list = archive_wo_ext.split("versions/")
@@ -35,6 +42,7 @@ def do_deploy(archive_path):
 
 
 def do_pack():
+    """Do the packing."""
     try:
         filepath = "versions/web_static_" + datetime.now().\
                    strftime("%Y%m%d%H%M%S") + ".tgz"
@@ -43,5 +51,5 @@ def do_pack():
         web_static")
         print("web_static packed: {} -> {}".
               format(filepath, os.path.getsize(filepath)))
-    except:
+    except Exception:
         return None
