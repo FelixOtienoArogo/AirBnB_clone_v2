@@ -1,31 +1,47 @@
 #!/usr/bin/python3
-"""
-Fabric script based on 1-pack_web_static.py.
-
-distributes an archive to the web servers.
-using the function do_deploy.
-"""
+from fabric.api import *
+import os
 from datetime import datetime
-from fabric.api import local, put, run, env
-from os.path import exists
-env.hosts = ['34.224.4.61', '18.206.192.35']
+
+env.hosts = ['34.224.4.61:80', '18.206.192.35:80']
 
 
 def do_deploy(archive_path):
-    """Distribute an archive ot web servers."""
-    if exists(archive_path) is False:
-        return False
-    try:
-        file_n = archive.path.split("/")[-1]
-        no_ext = file_n.split(".")[0]
-        path = "/data/web_static/releases/"
-        put(archive_path, '/tmp')
-        run('mkdir -p {}{}/'.format(path, no_ext))
-        run('tar -xzf /tmp/{} -C {}{}/'.format(file_n, path, no_ext))
-        run('rm /tmp/{}'.format(file_n))
-        run('mv {0}{1}/web_static/* {0}{1}/'.format(path, no_ext))
-        run('rm -rf /data/web_static/current')
-        run('ln -s {}{}/ /data/web_static/current'.format(path, no_ext))
+    a_list = archive_path.split(".tgz")
+    archive_wo_ext = "".join(a_list)
+    b_list = archive_wo_ext.split("versions/")
+    archive_wo_ext_ver = "".join(b_list)
+    c_list = archive_path.split("versions/")
+    archive_wo_ver = "".join(c_list)
+    if archive_path:
+        put(archive_path, '/tmp/')
+        run("mkdir -p /data/web_static/releases/{}/".
+            format(archive_wo_ext_ver))
+        run("tar -zxf /tmp/{} -C /data/web_static/releases/{}/"
+            .format(archive_wo_ver, archive_wo_ext_ver))
+        run("rm -r /tmp/{}".format(archive_wo_ver))
+        run("mv /data/web_static/releases/{}/web_static/*\
+        /data/web_static/releases/{}/".format(archive_wo_ext_ver,
+                                              archive_wo_ext_ver))
+        run("rm -rf /data/web_static/releases/{}/web_static".
+            format(archive_wo_ext_ver))
+        run("rm -rf /data/web_static/current")
+        run("ln -s /data/web_static/releases/{}/ /data/web_static/current".
+            format(archive_wo_ext_ver))
+        print("New version deployed!")
         return True
-    except Exception:
+    else:
         return False
+
+
+def do_pack():
+    try:
+        filepath = "versions/web_static_" + datetime.now().\
+                   strftime("%Y%m%d%H%M%S") + ".tgz"
+        local("mkdir -p versions")
+        local("tar -zcvf versions/web_static_$(date +%Y%m%d%H%M%S).tgz\
+        web_static")
+        print("web_static packed: {} -> {}".
+              format(filepath, os.path.getsize(filepath)))
+    except:
+        return None
